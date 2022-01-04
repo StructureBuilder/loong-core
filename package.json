@@ -1,5 +1,5 @@
 {
-  "name": "@loong/core",
+  "name": "@loong-js/core",
   "version": "0.0.2",
   "description": "Dependency injection of react + mobx",
   "keywords": [
@@ -20,6 +20,9 @@
       "import": "./dist/loong-core.es.js",
       "require": "./dist/loong-core.umd.js"
     }
+  },
+  "lint-staged": {
+    "*.ts": "eslint --fix"
   },
   "license": "MIT",
   "scripts": {

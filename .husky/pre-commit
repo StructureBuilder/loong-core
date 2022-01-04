@@ -1,5 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-pnpm test
-pnpx lint-staged
+npm test
+npx lint-staged

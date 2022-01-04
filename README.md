@@ -1,11 +1,11 @@
-# @loong/core
+# @loong-js/core
 
 通过依赖注入的方式搭建 `React` 应用。
 
 ## 安装
 
 ```bash
-yarn add @loong/core
+yarn add @loong-js/core
 
 # 需要前置安装 react mobx mobx-react-lite
 yarn add react mobx mobx-react-lite
@@ -61,7 +61,7 @@ yarn add react mobx mobx-react-lite
 在组件上绑定使用 `Component` 注解的 UI 控制类，执行 `bind` 会返回 `binder` 函数。使用方法：
 
 ```typescript
-import { Component, bind } from '@loong/core';
+import { Component, bind } from '@loong-js/core';
 
 // 1. 注解一个 UI 控制类
 @Component()
@@ -105,7 +105,7 @@ const App = binder<Record<string, unknown>, HTMLDivElement>(
 
 ```typescript
 import { FC } from 'react';
-import { Component, BoundProps, bind } from '@loong/core';
+import { Component, BoundProps, bind } from '@loong-js/core';
 
 @Component()
 class AppCompnent {
@@ -151,7 +151,7 @@ interface IComponentOptions {
 注解一个服务，使用方式很简单：
 
 ```typescript
-import { Injectable } from '@loong/core';
+import { Injectable } from '@loong-js/core';
 
 @Injectable()
 class Service {}
@@ -162,7 +162,7 @@ class Service {}
 连接最近绑定的 UI 控制类，`connect` 接受三个泛型，第一个是 UI 控制类，第二个定义了 Props 的类型，第三个定义了 Ref 的类型，使用方式：
 
 ```typescript
-import { Component, connect, bind } from '@loong/core';
+import { Component, connect, bind } from '@loong-js/core';
 
 @Component()
 class AppCompnent {
@@ -310,4 +310,4 @@ Changes are tracked in the [CHANGELOG.md](https://github.com/StructureBuilder/lo
 
 ## 📄 License
 
-`@loong/core` is available under the [MIT](https://github.com/StructureBuilder/loong-core/blob/master/license) License.
+`@loong-js/core` is available under the [MIT](https://github.com/StructureBuilder/loong-core/blob/master/license) License.
