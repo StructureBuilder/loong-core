@@ -7,6 +7,7 @@ import {
   ForwardRefRenderFunction,
   FunctionComponent,
   PropsWithChildren,
+  PropsWithoutRef,
   Ref,
   RefAttributes,
   useContext,
@@ -32,32 +33,6 @@ export type PropsWith$This<T extends IComponent, P = Record<string, never>> = {
 
 export type PropsWithout$This<P> = Omit<P, '$this'>;
 
-type GetProps<C> = C extends FunctionComponent<infer P> ? P : never;
-
-type Binder<T extends IComponent> = FunctionBinder<T> | ForwardRefExoticBinder<T>;
-
-type FunctionBinder<T extends IComponent> = <
-  P extends object,
-  C extends FunctionComponent<PropsWith$This<T, GetProps<C> & P>> = FunctionComponent<
-    PropsWith$This<T, P>
-  >
->(
-  ReactComponent: C,
-  options?: IBinderOptions
-) => FunctionComponent<PropsWithout$This<GetProps<C> & P>>;
-
-type ForwardRefExoticBinder<T extends IComponent> = <
-  P extends object,
-  TRef extends object,
-  C extends ForwardRefRenderFunction<
-    TRef,
-    PropsWith$This<T, GetProps<C> & P>
-  > = ForwardRefRenderFunction<TRef, PropsWith$This<T, P>>
->(
-  ReactComponent: C,
-  options?: IBinderOptions
-) => ForwardRefExoticComponent<PropsWithout$This<GetProps<C> & P>> & RefAttributes<TRef>;
-
 export type BoundProps<TBinder> = TBinder extends (
   ReactComponent:
     | FunctionComponent<PropsWith$This<infer T, Record<string, never>>>
@@ -81,7 +56,9 @@ export function createBind(initializer?: (result: ICreateComponentResult) => voi
     function binder<P extends object, TRef = Record<string, never>>(
       ReactComponent: ForwardRefRenderFunction<TRef, PropsWith$This<T, P>>,
       options?: IBinderOptions
-    ): ForwardRefExoticComponent<PropsWithout$This<P> & RefAttributes<TRef>>;
+    ): ForwardRefExoticComponent<
+      PropsWithChildren<PropsWithoutRef<PropsWithout$This<P>>> & RefAttributes<TRef>
+    >;
     function binder<P extends object>(
       ReactComponent: FunctionComponent<PropsWith$This<T, P>>,
       options?: IBinderOptions

@@ -27,12 +27,14 @@ class AppCompnent {
   constructor(public service: Service) {}
 }
 
-const Child = connect<AppCompnent>(({ $this }) => <div>Child {$this.service.count}</div>);
+const Child = connect<AppCompnent, { name: string }>(({ $this }) => (
+  <div>Child {$this.service.count}</div>
+));
 
 const App = bind(AppCompnent)<{ name: string }>(({ $this }) => (
   <div>
     <p>Count = {$this.service.count}</p>
-    <Child />
+    <Child name="test">test</Child>
     <button onClick={$this.service.increase}>Increase</button>
     <button onClick={$this.service.decrease}>Decrease</button>
   </div>
@@ -40,7 +42,7 @@ const App = bind(AppCompnent)<{ name: string }>(({ $this }) => (
 
 ReactDOM.render(
   <React.StrictMode>
-    <App name="app" />
+    <App name="app">test</App>
   </React.StrictMode>,
   document.getElementById('root')
 );

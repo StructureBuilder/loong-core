@@ -6,6 +6,7 @@ import {
   ForwardRefRenderFunction,
   FunctionComponent,
   PropsWithChildren,
+  PropsWithoutRef,
   Ref,
   RefAttributes,
   useContext,
@@ -15,21 +16,31 @@ import { BindContext } from './bind';
 
 type PropsWith$This<T, P> = {
   $this: T;
-} & P;
+} & PropsWithChildren<P>;
 
 interface IConnectOptions {
   forwardRef?: boolean;
 }
 
-export function connect<T, P = Record<string, never>>(
+export function connect<T, P extends object = Record<string, unknown>>(
   ReactComponent: FunctionComponent<PropsWith$This<T, P>>,
   options?: IConnectOptions
 ): FunctionComponent<PropsWithout$This<P>>;
-export function connect<T, P = Record<string, never>, TRef = Record<string, never>>(
+export function connect<
+  T,
+  P extends object = Record<string, unknown>,
+  TRef = Record<string, never>
+>(
   ReactComponent: ForwardRefRenderFunction<TRef, PropsWith$This<T, P>>,
   options?: IConnectOptions
-): ForwardRefExoticComponent<PropsWithout$This<P> & RefAttributes<TRef>>;
-export function connect<T, P = Record<string, never>, TRef = Record<string, never>>(
+): ForwardRefExoticComponent<
+  PropsWithChildren<PropsWithoutRef<PropsWithout$This<P>>> & RefAttributes<TRef>
+>;
+export function connect<
+  T,
+  P extends object = Record<string, unknown>,
+  TRef = Record<string, never>
+>(
   ReactComponent:
     | ForwardRefRenderFunction<TRef, PropsWith$This<T, P>>
     | FunctionComponent<PropsWith$This<T, P>>,
