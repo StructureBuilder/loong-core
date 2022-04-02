@@ -18,7 +18,6 @@ import {
   useMemo,
 } from 'react';
 import { BindContext } from './context';
-import { observer } from './observer';
 
 export type PropsWith$This<T extends IComponentConstructor, P = Record<string, never>> = {
   $this: InstanceType<T>;
@@ -103,7 +102,7 @@ export function createBind(options?: ICreateBindOptions) {
         if (
           binderOptions?.mode !== BinderMode.ALONE &&
           context.$this &&
-          context.$this instanceof Component
+          context.$this.constructor === Component
         ) {
           return createElement(ReactComponent, {
             $this: context.$this,
