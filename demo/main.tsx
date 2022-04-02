@@ -1,108 +1,108 @@
+import { bind, Component, Injectable, Prop } from '@/react-pure';
 import ReactDOM from 'react-dom';
-import { Component, Injectable, Prop, Hook, Watch, Autowired } from '@/index';
-import { IComponentConstructor } from '@/core/annotations/component';
 
-abstract class Logger {
-  abstract log(): void;
-}
-
-@Injectable()
-class LoggerImpl implements Logger {
-  log() {
-    console.log('LoggerImpl');
-  }
-}
-
-@Injectable()
-class Service1 {
-  @Prop()
-  name!: string;
-
-  count = 0;
-
-  constructor() {
-    console.log(this.name);
-  }
-
-  *changeCount() {
-    this.count = 3;
-  }
-
-  @Hook()
-  mounted() {
-    console.log('mounted');
-  }
-
-  @Watch(({ count }) => [count])
-  watch() {
-    console.log('count change');
-  }
-}
-
-@Injectable()
-class Service2 {
-  @Autowired()
-  service1!: Service1;
-
-  constructor(private logger: LoggerImpl) {
-    console.log(this.logger);
-  }
-}
-
-@Component({
-  providers: [
-    Service1,
-    {
-      provide: Logger,
-      useClass: LoggerImpl,
-    },
-  ],
-})
-class TestComponent {
-  constructor(public service2: Service2, public logger: Logger) {
-    this.logger.log();
-  }
-}
-
-const component = (TestComponent as IComponentConstructor).createComponent?.();
-
-console.log(component?.getComponent().service2.service1);
+// abstract class Logger {
+//   abstract log(): void;
+// }
 
 // @Injectable()
-// class Service {
+// class LoggerImpl implements Logger {
+//   log() {
+//     console.log('LoggerImpl');
+//   }
+// }
+
+// @Injectable()
+// class Service1 {
+//   @Prop()
+//   name!: string;
+
 //   count = 0;
 
-//   *increase() {
-//     console.log('service', this);
-//     this.count++;
+//   constructor() {
+//     console.log(this.name);
 //   }
 
-//   *decrease() {
-//     this.count--;
+//   *changeCount() {
+//     this.count = 3;
+//   }
+
+//   @Hook()
+//   mounted() {
+//     console.log('mounted');
+//   }
+
+//   @Watch(({ count }) => [count])
+//   watch() {
+//     console.log('count change');
+//   }
+// }
+
+// @Injectable()
+// class Service2 {
+//   @Autowired()
+//   service1!: Service1;
+
+//   constructor(private logger: LoggerImpl) {
+//     console.log(this.logger);
 //   }
 // }
 
 // @Component({
-//   providers: [Service],
+//   providers: [
+//     Service1,
+//     {
+//       provide: Logger,
+//       useClass: LoggerImpl,
+//     },
+//   ],
 // })
-// class AppCompnent {
-//   constructor(public service: Service) {
-//     console.log(this);
+// class TestComponent {
+//   constructor(public service2: Service2, public logger: Logger) {
+//     this.logger.log();
 //   }
 // }
 
-// const Child = connect<AppCompnent, { name: string }>(({ $this }) => (
-//   <div>Child {$this.service.count}</div>
-// ));
+// export const binder = bind(TestComponent);
 
-// const App = bind(AppCompnent)<{ name: string }>(({ $this }) => (
-//   <div>
-//     <p>Count = {$this.service.count}</p>
-//     <Child name="test">test</Child>
-//     <button onClick={() => $this.service.increase()}>Increase</button>
-//     <button onClick={$this.service.decrease}>Decrease</button>
-//   </div>
-// ));
+@Injectable()
+class Service {
+  count = 0;
+
+  *increase() {
+    console.log('service', this);
+    this.count++;
+  }
+
+  *decrease() {
+    this.count--;
+  }
+}
+
+@Component({
+  providers: [Service],
+})
+class AppCompnent {
+  @Prop()
+  name!: string;
+
+  constructor(public service: Service) {
+    console.log(this);
+  }
+}
+
+const binder = bind(AppCompnent);
+
+const Child = binder<{ name: string }>(({ $this }) => <div>Child {$this.service.count}</div>);
+
+const App = binder<{ name: string }>(({ $this }) => (
+  <div>
+    <p>Count = {$this.service.count}</p>
+    <Child name="test">test</Child>
+    <button onClick={() => $this.service.increase()}>Increase</button>
+    <button onClick={$this.service.decrease}>Decrease</button>
+  </div>
+));
 
 /**
  * connect(Component) => connector
@@ -115,7 +115,7 @@ console.log(component?.getComponent().service2.service1);
  *   - C(CComponent) - B(BComponent) create
  */
 
-// ReactDOM.render(<App name="app">test</App>, document.getElementById('root'));
+ReactDOM.render(<App name="app">test</App>, document.getElementById('root'));
 
 // import { observable, observe } from '@/observer';
 

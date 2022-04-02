@@ -1,9 +1,35 @@
-import { useEffect, useMemo } from 'react';
-import { observe, unobserve } from '..';
+import {
+  forwardRef,
+  ForwardRefExoticComponent,
+  ForwardRefRenderFunction,
+  FunctionComponent,
+  PropsWithChildren,
+  PropsWithoutRef,
+  Ref,
+  RefAttributes,
+  useEffect,
+  useMemo,
+} from 'react';
+import { observe, unobserve } from '../observer';
 import { useForceUpdate } from './hooks/use-force-update';
 
-export function observer<P extends object>(Component: React.FunctionComponent<P>) {
-  return (...args: any[]) => {
+export interface IObserverOptions {
+  forwardRef?: boolean;
+}
+
+export function observer<P = Record<string, never>>(
+  Component: FunctionComponent<P>,
+  options?: IObserverOptions
+): FunctionComponent<P>;
+export function observer<T, P = Record<string, never>>(
+  Component: ForwardRefRenderFunction<T, P>,
+  options?: IObserverOptions
+): ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>;
+export function observer<T, P = Record<string, never>>(
+  Component: FunctionComponent<P> | ForwardRefRenderFunction<T, P>,
+  options?: IObserverOptions
+) {
+  const WrappedComponent = (props: PropsWithChildren<P>, contextOrRef?: Ref<T> | any) => {
     const forceUpdate = useForceUpdate();
     const render = useMemo(
       () =>
@@ -11,7 +37,6 @@ export function observer<P extends object>(Component: React.FunctionComponent<P>
           lazy: true,
           scheduler: forceUpdate,
         }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       []
     );
 
@@ -19,9 +44,20 @@ export function observer<P extends object>(Component: React.FunctionComponent<P>
       return () => {
         unobserve(render);
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return render(...args);
+    return render(props, contextOrRef);
   };
+
+  WrappedComponent.displayName = Component.displayName;
+
+  if ((Component as FunctionComponent<P>).contextTypes) {
+    WrappedComponent.contextTypes = (Component as FunctionComponent<P>).contextTypes;
+  }
+
+  if (options?.forwardRef) {
+    return forwardRef(WrappedComponent);
+  }
+
+  return WrappedComponent;
 }

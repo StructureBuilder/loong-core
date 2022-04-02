@@ -1,6 +1,9 @@
-import { observer } from './observer';
 import {
-  createContext,
+  ComponentObservable,
+  ComponentObserve,
+  IComponentConstructor,
+} from '@/core/annotations/component';
+import {
   createElement,
   forwardRef,
   ForwardRefExoticComponent,
@@ -12,28 +15,32 @@ import {
   RefAttributes,
   useContext,
   useEffect,
-  useState,
+  useMemo,
 } from 'react';
-import { IComponent, ICreateComponentResult } from '../core/decorators/component';
-import { DependencyMap } from '../core/provider-registry';
+import { BindContext } from './context';
+import { observer } from './observer';
 
-export interface IBindContextValue<T = any> {
-  dependencyMap: DependencyMap;
-  $this: T;
-}
-
-export const BindContext = createContext<IBindContextValue>({
-  dependencyMap: new Map(),
-  $this: null,
-});
-
-export type PropsWith$This<T extends IComponent, P = Record<string, never>> = {
+export type PropsWith$This<T extends IComponentConstructor, P = Record<string, never>> = {
   $this: InstanceType<T>;
 } & PropsWithChildren<P>;
 
+enum BinderMode {
+  ALONE = 'alone',
+  DEPENDENT = 'dependent',
+}
+
+export interface IBinderOptions {
+  forwardRef?: boolean;
+  mode?: Lowercase<keyof typeof BinderMode>;
+}
+
 export type PropsWithout$This<P> = Omit<P, '$this'>;
 
-export type BoundProps<TBinder> = TBinder extends (
+export interface IViewOptions {
+  forwardRef?: boolean;
+}
+
+export type BoundProps<Binder> = Binder extends (
   ReactComponent:
     | FunctionComponent<PropsWith$This<infer T, Record<string, never>>>
     | ForwardRefRenderFunction<
@@ -47,79 +54,112 @@ export type BoundProps<TBinder> = TBinder extends (
     }
   : never;
 
-export interface IBinderOptions {
-  forwardRef?: boolean;
+interface ICreateBindOptions {
+  view?: <T, P = Record<string, never>>(
+    Component: FunctionComponent<P> | ForwardRefRenderFunction<T, P>,
+    options?: IViewOptions
+  ) => FunctionComponent<P> | ForwardRefRenderFunction<T, P>;
+  observe?: ComponentObserve;
+  observable?: ComponentObservable;
 }
 
-export function createBind(initializer?: (result: ICreateComponentResult) => void) {
-  function bind<T extends IComponent>(Component: T) {
-    function binder<P extends object, TRef = Record<string, never>>(
-      ReactComponent: ForwardRefRenderFunction<TRef, PropsWith$This<T, P>>,
-      options?: IBinderOptions
-    ): ForwardRefExoticComponent<
-      PropsWithChildren<PropsWithoutRef<PropsWithout$This<P>>> & RefAttributes<TRef>
-    >;
-    function binder<P extends object>(
+export function createBind(options?: ICreateBindOptions) {
+  return function bind<T extends IComponentConstructor>(Component: T) {
+    function binder<P = Record<string, never>>(
       ReactComponent: FunctionComponent<PropsWith$This<T, P>>,
-      options?: IBinderOptions
+      binderOptions?: IBinderOptions
     ): FunctionComponent<PropsWithout$This<P>>;
-    function binder<P extends object, TRef = Record<string, never>>(
+    function binder<P = Record<string, never>, BinderRef = Record<string, never>>(
+      ReactComponent: ForwardRefRenderFunction<BinderRef, PropsWith$This<T, P>>,
+      binderOptions?: IBinderOptions
+    ): ForwardRefExoticComponent<
+      PropsWithChildren<PropsWithoutRef<PropsWithout$This<P>>> & RefAttributes<BinderRef>
+    >;
+    function binder<P = Record<string, never>, BinderRef = Record<string, never>>(
       ReactComponent:
         | FunctionComponent<PropsWith$This<T, P>>
-        | ForwardRefRenderFunction<TRef, PropsWith$This<T, P>>,
-      options?: IBinderOptions
+        | ForwardRefRenderFunction<BinderRef, PropsWith$This<T, P>>,
+      binderOptions?: IBinderOptions
     ) {
-      // TODO: Replace with observer
-      ReactComponent = observer(ReactComponent, options);
+      if (options?.view) {
+        ReactComponent = options.view(ReactComponent, {
+          forwardRef: binderOptions?.forwardRef,
+        });
+      }
 
-      const WrappedComponent = (props: PropsWithChildren<PropsWithout$This<P>>, ref: Ref<TRef>) => {
+      const WrappedComponent = (
+        props: PropsWithChildren<PropsWithout$This<P>>,
+        contextOrRef?: Ref<BinderRef> | any
+      ) => {
         const context = useContext(BindContext);
-        const [result] = useState(() =>
-          (
-            Component as Required<IComponent<T, PropsWithChildren<PropsWithout$This<P>>>>
-          ).createComponent(props, context.dependencyMap)
-        );
-        const { component, dependencyMap, setProps, destroy, useWatcher, invokeHook } = result;
-        const restProps: PropsWithChildren<PropsWithout$This<P>> & RefAttributes<TRef> = {
+        const restProps: PropsWithChildren<PropsWithout$This<P>> & RefAttributes<BinderRef> = {
           ...props,
         };
-        if (options?.forwardRef) {
-          restProps.ref = ref;
+
+        if (binderOptions?.forwardRef) {
+          restProps.ref = contextOrRef;
         }
-        setProps(props);
+
+        if (
+          binderOptions?.mode !== BinderMode.ALONE &&
+          context.$this &&
+          context.$this instanceof Component
+        ) {
+          return createElement(ReactComponent, {
+            $this: context.$this,
+            ...restProps,
+          } as PropsWithChildren<PropsWith$This<T, P>>);
+        }
+
+        const component = useMemo(
+          () =>
+            (Component as Required<IComponentConstructor>).createComponent({
+              initialProps: props,
+              observe: options?.observe,
+              observable: options?.observable,
+              dependencies: context.dependencies,
+            }),
+          []
+        );
+        const dependencies = useMemo(() => component.getProviders(), []);
+        const $this = useMemo(() => component.getComponent(), []);
+
+        component.props.setProps(props);
+
         useEffect(() => {
-          invokeHook('mounted');
-          useWatcher();
+          component.hooks.invokeHook('mounted');
+
           return () => {
-            invokeHook('unmount');
-            destroy();
+            component.hooks.invokeHook('unmount');
+            component.destroy();
           };
           // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []);
-        initializer?.(result);
+
         return createElement(
           BindContext.Provider,
           {
             value: {
-              dependencyMap,
-              $this: component,
+              dependencies,
+              $this,
             },
           },
           createElement(ReactComponent, {
-            $this: component,
+            $this,
             ...restProps,
           } as PropsWithChildren<PropsWith$This<T, P>>)
         );
       };
 
       WrappedComponent.displayName = ReactComponent.displayName;
+
       if ((ReactComponent as FunctionComponent<PropsWith$This<T, P>>).contextTypes) {
         WrappedComponent.contextTypes = (
           ReactComponent as FunctionComponent<PropsWith$This<T, P>>
         ).contextTypes;
       }
 
-      if (options?.forwardRef) {
+      if (binderOptions?.forwardRef) {
         return forwardRef(WrappedComponent);
       }
 
@@ -127,9 +167,7 @@ export function createBind(initializer?: (result: ICreateComponentResult) => voi
     }
 
     return binder;
-  }
-
-  return bind;
+  };
 }
 
 export const bind = createBind();
