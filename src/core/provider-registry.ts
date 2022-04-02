@@ -1,106 +1,130 @@
-import {
-  PROVIDER_CONTEXT,
-  PROVIDER_HOOK_NAMES,
-  PROVIDER_WATCH,
-  PROVIDER_WATCH_NAMES,
-} from '../constants';
-import { IClassType } from './component';
-import { Context } from './context';
-import { globalContext } from './global-context';
+import { ComponentRegistryOptions, IProviderConstructor, Provider } from './annotations/component';
+import { injectableTargetMap } from './annotations/injectable';
+import { error } from './utils/error';
 
-export enum ProviderType {
-  DEPENDENCY = 'dependency',
-  LOCAL = 'local',
+// Prevent circular dependency.
+enum ProviderStatus {
+  INSTANTIATING,
+  INSTANTIATED,
 }
 
-export interface IProviderValue {
-  type: ProviderType;
-  provider: any;
+interface IProvider {
+  status: ProviderStatus;
+  instance?: any;
 }
-
-export type ProviderMap = Map<IClassType, IProviderValue>;
-
-export type DependencyMap = Map<IClassType, any>;
 
 export class ProviderRegistry {
-  private providerMap: ProviderMap = new Map();
+  private providerMap = new Map<IProviderConstructor, IProvider>();
 
-  constructor(
-    private props: any,
-    private component: IClassType,
-    private dependencyMap: DependencyMap = new Map(),
-    private providers: IClassType[] = []
-  ) {
-    this.setDependencyMap();
-    globalContext.setContext({
-      props: this.props,
-    });
-    this.register(this.providers);
-    this.register(this.component);
-    this.bindContext();
-    globalContext.clearContext();
+  private dependencyMap = new Map<IProviderConstructor, any>();
+
+  // Create a path that allows the provider to find its corresponding actual provider.
+  private providerToClassProvider = new Map<
+    IProviderConstructor | Function,
+    IProviderConstructor
+  >();
+
+  private providerInstances: any[] = [];
+
+  get providers() {
+    return this.options.providers || [];
   }
 
-  private setDependencyMap() {
-    this.dependencyMap.forEach((value, key) => {
-      this.providerMap.set(key, {
-        type: ProviderType.DEPENDENCY,
-        provider: value,
-      });
-    });
+  get dependencies() {
+    return this.options.dependencies || [];
   }
 
-  private internalRegister(Provider: IClassType) {
-    const paramtypes: IClassType[] = Reflect.getMetadata('design:paramtypes', Provider) || [];
-    const provider = new Provider(
-      ...paramtypes.map((paramtype) => this.getProvider(paramtype)?.provider)
+  constructor(private component: IProviderConstructor, private options: ComponentRegistryOptions) {
+    this.initializeMap();
+    this.registerProviders(this.providers);
+    this.registerProvider(component);
+    this.providerMap.forEach((provider) => this.providerInstances.push(provider?.instance));
+  }
+
+  private initializeMap() {
+    this.dependencies.forEach((dependency) =>
+      this.dependencyMap.set(dependency.constructor, dependency)
     );
-    this.providerMap.set(Provider, {
-      provider,
-      type: ProviderType.LOCAL,
-    });
-    provider[PROVIDER_HOOK_NAMES]?.forEach(([methodName, hookName]: [string, string]) => {
-      globalContext.addHook(hookName, provider[methodName]);
-    });
-    provider[PROVIDER_WATCH_NAMES]?.forEach((methodName: string) => provider[methodName]());
   }
 
-  private bindContext() {
-    const component = this.getProvider(this.component)?.provider;
-    const context = new Context(globalContext.getProps(), globalContext.getHooks());
-    this.providerMap.forEach(({ type, provider }) => {
-      if (type === ProviderType.LOCAL) {
-        provider[PROVIDER_CONTEXT] = context;
-        if (provider[PROVIDER_WATCH]) {
-          context.collectWatchContext(provider[PROVIDER_WATCH]);
-        }
-      }
-    });
-    component[PROVIDER_CONTEXT] = context;
-  }
+  private registerProvider(provider: Provider, instantiatingProvider?: IProviderConstructor) {
+    let Provider: IProviderConstructor | null = null;
 
-  private register(providers: IClassType | IClassType[]) {
-    if (!Array.isArray(providers)) {
-      providers = [providers];
+    // Add a path only if the provider is different from the actual provider.
+    if (
+      typeof provider === 'object' &&
+      provider.provide &&
+      provider.useClass &&
+      provider.provide !== provider.useClass
+    ) {
+      Provider = provider.useClass;
+      this.providerToClassProvider.set(provider.provide, provider.useClass);
+    } else if (typeof provider === 'function') {
+      Provider = provider;
     }
+
+    if (!Provider) {
+      return;
+    }
+
+    // Check whether the provider is registered with injectable.
+    if (this.component !== Provider && !injectableTargetMap.has(Provider)) {
+      error(`${Provider.name} is not registered with injectable`);
+    }
+
+    if (this.providerMap.get(Provider)?.status === ProviderStatus.INSTANTIATED) {
+      return;
+    }
+
+    if (this.providerMap.get(Provider)?.status === ProviderStatus.INSTANTIATING) {
+      error(
+        `Circular dependency found ${Provider.name} -> ${instantiatingProvider?.name} -> ${Provider.name}`
+      );
+    }
+
+    this.providerMap.set(Provider, {
+      status: ProviderStatus.INSTANTIATING,
+    });
+
+    const paramtypes: IProviderConstructor[] =
+      Reflect.getMetadata('design:paramtypes', Provider) || [];
+
+    // Register dependent providers first.
+    this.registerProviders(
+      paramtypes.map((paramtype) => this.getProviderType(paramtype)),
+      Provider
+    );
+
+    let instance = new Provider(...paramtypes.map((paramtype) => this.getProvider(paramtype)));
+
+    if (this.options.observable) {
+      instance = this.options.observable(instance);
+    }
+
+    this.providerMap.set(Provider, {
+      instance,
+      status: ProviderStatus.INSTANTIATED,
+    });
+  }
+
+  private registerProviders(providers: Provider[], instantiatingProvider?: IProviderConstructor) {
     providers.forEach((provider: any) => {
-      this.internalRegister(provider);
+      this.registerProvider(provider, instantiatingProvider);
     });
   }
 
-  getProviderMap(): DependencyMap {
-    const entries: [any, IProviderValue][] = [];
-    this.providerMap.forEach((value, key) => {
-      entries.push([key, value.provider]);
-    });
-    return new Map(entries);
+  private getProviderType(provider: IProviderConstructor) {
+    return this.providerToClassProvider.has(provider)
+      ? (this.providerToClassProvider.get(provider) as IProviderConstructor)
+      : provider;
   }
 
-  getProvider(provider: IClassType) {
-    return this.providerMap.get(provider);
+  getProvider(provider: IProviderConstructor) {
+    provider = this.getProviderType(provider);
+    return this.providerMap.get(provider)?.instance || this.dependencyMap.get(provider);
   }
 
   getProviders() {
-    return Array.from(this.providerMap.values());
+    return this.providerInstances;
   }
 }

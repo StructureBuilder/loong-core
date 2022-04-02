@@ -17,8 +17,10 @@
     }
   ],
   "rules": {
+    "require-yield": "off",
     "react/display-name": "off",
+    "react-hooks/rules-of-hooks": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "react-hooks/rules-of-hooks": "off"
+    "@typescript-eslint/ban-types": "off"
   }
 }
