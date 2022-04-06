@@ -1,6 +1,6 @@
 {
   "name": "@loong-js/core",
-  "version": null,
+  "version": "1.0.0",
   "description": "Dependency injection of react + mobx",
   "keywords": [
     "react",

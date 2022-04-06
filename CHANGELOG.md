@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [](https://github.com/StructureBuilder/loong-core/compare/v0.0.4...v) (2022-04-06)
+## [1.0.0](https://github.com/StructureBuilder/loong-core/compare/v0.0.4...v1.0.0) (2022-04-06)
 
 
 ### Features
@@ -15,6 +15,11 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * **src/react-pure:** fix the logic of bind function to judge whether  exists ([fdc9d8c](https://github.com/StructureBuilder/loong-core/commit/fdc9d8ce9e144fbfa9d3bc7d0f0ce2ee76be369f))
+
+
+### Others
+
+* **release:** null ([f7563e4](https://github.com/StructureBuilder/loong-core/commit/f7563e4e84cc3701a7f9a55268f0af06d2135ac0))
 
 ### [0.0.4](https://github.com/StructureBuilder/loong-core/compare/v0.0.3...v0.0.4) (2022-01-11)
 
