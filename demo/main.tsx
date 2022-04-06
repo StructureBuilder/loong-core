@@ -1,4 +1,5 @@
-import { bind, Component, Injectable, Prop } from '@/react-pure';
+import { bind, Component, Injectable, Prop } from '@/react-mobx';
+import { makeAutoObservable } from 'mobx';
 import ReactDOM from 'react-dom';
 
 // abstract class Logger {
@@ -69,12 +70,16 @@ import ReactDOM from 'react-dom';
 class Service {
   count = 0;
 
-  *increase() {
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  increase() {
     console.log('service', this);
     this.count++;
   }
 
-  *decrease() {
+  decrease() {
     this.count--;
   }
 }
@@ -100,7 +105,7 @@ const App = binder<{ name: string }>(({ $this }) => (
     <p>Count = {$this.service.count}</p>
     <Child name="test">test</Child>
     <button onClick={() => $this.service.increase()}>Increase</button>
-    <button onClick={$this.service.decrease}>Decrease</button>
+    <button onClick={() => $this.service.decrease()}>Decrease</button>
   </div>
 ));
 
