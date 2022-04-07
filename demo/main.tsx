@@ -1,5 +1,4 @@
-import { bind, Component, Injectable, Prop } from '@/react-mobx';
-import { makeAutoObservable } from 'mobx';
+import { bind, Component, Injectable, Prop, Action } from '@/index';
 import ReactDOM from 'react-dom';
 
 // abstract class Logger {
@@ -70,15 +69,13 @@ import ReactDOM from 'react-dom';
 class Service {
   count = 0;
 
-  constructor() {
-    makeAutoObservable(this);
-  }
-
+  @Action()
   increase() {
     console.log('service', this);
     this.count++;
   }
 
+  @Action()
   decrease() {
     this.count--;
   }

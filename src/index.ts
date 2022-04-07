@@ -1,1 +1,1 @@
-export * from './react-mobx';
+export * from './react';
