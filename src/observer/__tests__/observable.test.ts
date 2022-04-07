@@ -92,15 +92,15 @@ describe('observable', () => {
     const result = observable(
       {
         count: 1,
-        *setCount() {
+        setCount() {
           this.count = 2;
-        },
-        setCount2() {
-          this.count = 3;
         },
       },
       {
         strict: true,
+        checkAction(result) {
+          return typeof result === 'function';
+        },
       }
     );
 
@@ -114,10 +114,6 @@ describe('observable', () => {
 
     expect(console.log).toHaveBeenCalledWith(2);
 
-    expect(() => result.setCount2()).toThrow(
-      '[@loong/observer]: data can only be updated in action.'
-    );
-
     expect(() => (result.count = 4)).toThrow(
       '[@loong/observer]: data can only be updated in action.'
     );
@@ -127,13 +123,16 @@ describe('observable', () => {
     const result = observable(
       {
         count: 1,
-        *setCount() {
+        setCount() {
           this.count = 2;
         },
       },
       {
         strict: true,
         autoBind: true,
+        checkAction(result) {
+          return typeof result === 'function';
+        },
       }
     );
     const { setCount } = result;

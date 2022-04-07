@@ -1,6 +1,7 @@
 import { OPTIONS } from './constants/key-cache';
 import { getTargetType, TargetType } from './constants/target-type';
 import { baseHandler, collectionHandler } from './handlers';
+import { Key } from './reaction';
 import { isObject } from './utils/is-object';
 import { isObservable } from './utils/is-observable';
 import { setKeyCache } from './utils/key-cache';
@@ -10,9 +11,12 @@ export const rawToProxyMap = new WeakMap<any, any>();
 
 export const proxyToRawMap = new WeakMap<any, any>();
 
+export type CheckActionType = (result: Function, target: object, key: Key) => boolean;
+
 export interface IObservableOptions {
   autoBind?: boolean;
   strict?: boolean;
+  checkAction?: CheckActionType;
 }
 
 export function observable<T extends object>(target: T, options?: IObservableOptions): T {

@@ -1,17 +1,19 @@
 import { Handler } from '.';
 import { createAction } from '../action';
+import { OPTIONS } from '../constants/key-cache';
 import { TrackOperationType, TriggerOperationType } from '../constants/operation-type';
-import { proxyToRawMap } from '../observable';
+import { CheckActionType, proxyToRawMap } from '../observable';
 import { Key, track, trigger } from '../reaction';
 import { findObservable } from '../utils/find-observable';
 import { hasChanged } from '../utils/has-changed';
 import { hasOwnProperty } from '../utils/has-own-property';
-import { isGeneratorFunction } from '../utils/is-generator-function';
 import { isObject } from '../utils/is-object';
+import { getKeyCache } from '../utils/key-cache';
 
 export const baseHandler: Handler = {
   get(target, key: Key, receiver: object) {
     const result = Reflect.get(target, key, receiver);
+    const checkAction = getKeyCache<CheckActionType>(target, OPTIONS, 'checkAction');
 
     track(target, TrackOperationType.GET, key);
 
@@ -21,7 +23,7 @@ export const baseHandler: Handler = {
       return result;
     }
 
-    if (isGeneratorFunction(result)) {
+    if (checkAction && checkAction(result, target, key)) {
       return createAction(target, key, result);
     }
 
