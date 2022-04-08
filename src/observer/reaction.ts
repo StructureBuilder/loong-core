@@ -1,10 +1,10 @@
-import { inBatch } from './batch-updates';
 import { ITERATION_KEY } from './constants/iteration-key';
 import { EFFECTS, OPTIONS } from './constants/key-cache';
 import { TrackOperationType, TriggerOperationType } from './constants/operation-type';
 import { hasAllowStateUpdates } from './state-updates';
 import { error } from './utils/error';
 import { getKeyCache, setKeyCache } from './utils/key-cache';
+import { schedule } from './utils/schedule';
 
 export type Key = string | symbol;
 
@@ -17,6 +17,8 @@ const reactionStack: Reaction[] = [];
 
 // Trigger the recorded reactions in the update function.
 const pendingReactions: Effects = new Set();
+
+let hasRunningTriggerScheduler = false;
 
 export class Reaction {
   cleaners: Effects[] = [];
@@ -114,15 +116,19 @@ export function trigger(target: object, type: TriggerOperationType, key?: unknow
 
   // If it is a strict mode and is not executed during the action,
   // the update is not allowed.
-  if (getKeyCache(target, OPTIONS, 'strict') !== false && !hasAllowStateUpdates()) {
+  if (getKeyCache(target, OPTIONS, 'strict') === true && !hasAllowStateUpdates()) {
     error('data can only be updated in action.');
   }
 
-  // If it is not a strict mode and is not in the execution of the action,
-  // it indicates that this is a direct update of the data, so batch update is not required, // so it is triggered directly
-  if (!inBatch()) {
-    triggerPendingReactions();
+  if (hasRunningTriggerScheduler) {
+    return;
   }
+  hasRunningTriggerScheduler = true;
+  // Batch update using scheduler uniformly.
+  schedule(() => {
+    hasRunningTriggerScheduler = false;
+    triggerPendingReactions();
+  });
 }
 
 function addReactionsForKey(target: object, key: unknown) {
@@ -130,6 +136,9 @@ function addReactionsForKey(target: object, key: unknown) {
 }
 
 export function triggerPendingReactions() {
+  if (pendingReactions.size === 0) {
+    return;
+  }
   pendingReactions.forEach((reaction) => reaction.trigger());
   pendingReactions.clear();
 }

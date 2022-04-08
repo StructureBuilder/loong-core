@@ -32,7 +32,9 @@ describe('Watch', () => {
 
     component.getComponent().count++;
 
-    expect(console.log).toHaveBeenCalledWith(1);
+    setTimeout(() => {
+      expect(console.log).toHaveBeenCalledWith(1);
+    });
   });
 
   test('pass in an arrow function that returns a dependent array', () => {
@@ -65,11 +67,15 @@ describe('Watch', () => {
 
     component.getComponent().count1++;
 
-    expect(console.log).toHaveBeenCalledWith(1, 0);
+    setTimeout(() => {
+      expect(console.log).toHaveBeenCalledWith(1, 0);
+    });
 
     component.getComponent().count2++;
 
-    expect(console.log).toHaveBeenCalledWith(1, 1);
+    setTimeout(() => {
+      expect(console.log).toHaveBeenCalledWith(1, 1);
+    });
   });
 
   test('watch the change of prop', () => {
@@ -103,7 +109,9 @@ describe('Watch', () => {
 
     component.getComponent().count++;
 
-    expect(component.getComponent().count).toBe(2);
+    setTimeout(() => {
+      expect(component.getComponent().count).toBe(2);
+    });
   });
 
   test('pass in an arrow function that returns a Boolean value', () => {
@@ -134,7 +142,9 @@ describe('Watch', () => {
 
     component.getComponent().count++;
 
-    expect(console.log).toHaveBeenCalledWith(1);
+    setTimeout(() => {
+      expect(console.log).toHaveBeenCalledWith(1);
+    });
   });
 
   test('watch the value that changes in the service', () => {
@@ -171,6 +181,8 @@ describe('Watch', () => {
 
     component.getComponent().service.count++;
 
-    expect(console.log).toHaveBeenCalledWith(1);
+    setTimeout(() => {
+      expect(console.log).toHaveBeenCalledWith(1);
+    });
   });
 });

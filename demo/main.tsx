@@ -1,4 +1,4 @@
-import { bind, Component, Injectable, Prop, Action } from '@/index';
+import { bind, Component, Injectable, Prop, Action, Watch } from '@/index';
 import ReactDOM from 'react-dom';
 
 // abstract class Logger {
@@ -69,10 +69,31 @@ import ReactDOM from 'react-dom';
 class Service {
   count = 0;
 
+  count2 = 0;
+
+  @Watch('count')
+  change() {
+    console.log('watch', this.count);
+  }
+
   @Action()
-  increase() {
-    console.log('service', this);
+  async increase() {
     this.count++;
+    this.count2 += 2;
+    console.log('commit');
+
+    await new Promise((resolve) => {
+      this.count++;
+      this.count2 += 2;
+      console.log('commit in promise');
+      setTimeout(() => {
+        resolve(true);
+      }, 1000);
+    });
+
+    this.count++;
+    this.count2 += 2;
+    console.log('commit after promise');
   }
 
   @Action()
@@ -97,14 +118,19 @@ const binder = bind(AppCompnent);
 
 const Child = binder<{ name: string }>(({ $this }) => <div>Child {$this.service.count}</div>);
 
-const App = binder<{ name: string }>(({ $this }) => (
-  <div>
-    <p>Count = {$this.service.count}</p>
-    <Child name="test">test</Child>
-    <button onClick={() => $this.service.increase()}>Increase</button>
-    <button onClick={() => $this.service.decrease()}>Decrease</button>
-  </div>
-));
+const App = binder<{ name: string }>(({ $this }) => {
+  console.log('render');
+  return (
+    <div>
+      <p>
+        Count = {$this.service.count} - {$this.service.count2}
+      </p>
+      <Child name="test">test</Child>
+      <button onClick={() => $this.service.increase()}>Increase</button>
+      <button onClick={() => $this.service.decrease()}>Decrease</button>
+    </div>
+  );
+});
 
 /**
  * connect(Component) => connector
