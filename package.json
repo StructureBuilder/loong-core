@@ -1,6 +1,6 @@
 {
   "name": "@loong-js/core",
-  "version": "1.1.0-alpha.1",
+  "version": "1.1.0-alpha.2",
   "description": "Dependency injection of react + mobx",
   "keywords": [
     "react",
@@ -32,7 +32,7 @@
     "prepare": "husky install",
     "commit": "commit",
     "release": "standard-version",
-    "release:aplpha": "yarn release --prerelease alpha",
+    "release:alpha": "yarn release --prerelease alpha",
     "format": "prettier --write --ignore-unknown .",
     "lint": "eslint --cache ./src",
     "analyze": "source-map-explorer 'dist/assets/*.js'",

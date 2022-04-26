@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0-alpha.2](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.1...v1.1.0-alpha.2) (2022-04-26)
+
+
+### Bug Fixes
+
+* **demo:** delete Action import ([23b361a](https://github.com/StructureBuilder/loong-core/commit/23b361a34078c5216f90608d24d537ca848d0bd6))
+* **react-mobx:** react-mobx delete options observable ([2da0f60](https://github.com/StructureBuilder/loong-core/commit/2da0f60f4b48b50dd0a1fe8105356b8381eb4dc3))
+
 ## [1.1.0-alpha.1](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.0...v1.1.0-alpha.1) (2022-04-26)
 
 
