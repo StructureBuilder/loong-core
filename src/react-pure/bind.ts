@@ -2,7 +2,7 @@ import {
   ComponentObservable,
   ComponentObserve,
   IComponentConstructor,
-} from '@/core/annotations/component';
+} from '../core/annotations/component';
 import {
   createElement,
   forwardRef,

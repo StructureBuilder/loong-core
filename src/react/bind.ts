@@ -1,6 +1,6 @@
-import { observable, observe, unobserve } from '@/observer';
-import { IObservableOptions } from '@/observer/observable';
-import { createBind } from '@/react-pure';
+import { observable, observe, unobserve } from '../observer';
+import { IObservableOptions } from '../observer/observable';
+import { createBind } from '../react-pure';
 import { checkAction } from './check-action';
 import { observer } from './observer';
 

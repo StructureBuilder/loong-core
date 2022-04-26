@@ -10,7 +10,7 @@ import {
   useEffect,
   useMemo,
 } from 'react';
-import { observe, unobserve } from '@/observer';
+import { observe, unobserve } from '../observer';
 import { useForceUpdate } from './hooks/use-force-update';
 
 export interface IObserverOptions {
