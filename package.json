@@ -32,6 +32,7 @@
     "prepare": "husky install",
     "commit": "commit",
     "release": "standard-version",
+    "release:aplpha": "yarn release --prerelease alpha",
     "format": "prettier --write --ignore-unknown .",
     "lint": "eslint --cache ./src",
     "analyze": "source-map-explorer 'dist/assets/*.js'",
