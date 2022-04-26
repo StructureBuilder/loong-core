@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import path from 'path';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import dts from 'vite-plugin-dts';
+
+const typeFiles: string[] = ['core/types/index.d.ts', 'react-pure/types/index.d.ts'];
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,7 +20,28 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
-    dts(),
+    dts({
+      beforeWriteFile(filePath, content) {
+        if (typeFiles.some((typeFile) => filePath.includes(typeFile))) {
+          return;
+        }
+        return {
+          filePath,
+          content: `${typeFiles
+            .map((typeFile) => {
+              const result = path
+                .relative(filePath, path.join(__dirname, 'dist/src/', typeFile))
+                .slice(3);
+              if (!result) {
+                return null;
+              }
+              return `/// <reference path="${result}" />`;
+            })
+            .filter(Boolean)
+            .join('\n')}\n${content}`,
+        };
+      },
+    }),
   ],
   build: {
     sourcemap: true,
