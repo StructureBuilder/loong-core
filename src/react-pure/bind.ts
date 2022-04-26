@@ -124,6 +124,7 @@ export function createBind(options?: ICreateBindOptions) {
         const $this = useMemo(() => component.getComponent(), []);
 
         component.props.setProps(props);
+        component.hooks.invokeHook('setup');
 
         useEffect(() => {
           component.hooks.invokeHook('mounted');
