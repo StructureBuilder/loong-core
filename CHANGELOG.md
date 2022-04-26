@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0-alpha.1](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.0...v1.1.0-alpha.1) (2022-04-26)
+
+
+### Features
+
+* **hooks:** add setup hooks ([b121b08](https://github.com/StructureBuilder/loong-core/commit/b121b084eb7ebef1672a7c077fad5195914821b3))
+* **observer:** add async batch updates ([5073e23](https://github.com/StructureBuilder/loong-core/commit/5073e23960ed064606fa200eb0f5c7d8aac1eb6d))
+* **react:** complete @loong/react ([db7d3b1](https://github.com/StructureBuilder/loong-core/commit/db7d3b13ef86dc0972f8bacc2d489a1bcc6889b9))
+
+
+### Bug Fixes
+
+* **observer:** add observable options -- checkAction ([35754ea](https://github.com/StructureBuilder/loong-core/commit/35754ea3a45fe0e6dea565b02b9f6ee5fd089c4a))
+
 ## [1.1.0-alpha.0](https://github.com/StructureBuilder/loong-core/compare/v0.0.4...v1.1.0-alpha.0) (2022-04-06)
 
 
