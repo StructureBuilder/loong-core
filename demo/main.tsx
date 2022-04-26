@@ -1,4 +1,4 @@
-import { bind, Component, Injectable, Prop, Action, Watch } from '@/index';
+import { bind, Component, Injectable, Prop, Watch } from '@/index';
 import ReactDOM from 'react-dom';
 
 // abstract class Logger {
@@ -76,7 +76,6 @@ class Service {
     console.log('watch', this.count);
   }
 
-  @Action()
   async increase() {
     this.count++;
     this.count2 += 2;
@@ -96,7 +95,6 @@ class Service {
     console.log('commit after promise');
   }
 
-  @Action()
   decrease() {
     this.count--;
   }
