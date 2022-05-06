@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0-alpha.5](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.4...v1.1.0-alpha.5) (2022-05-06)
+
+
+### Bug Fixes
+
+* **core:** fix depends on the above services and will be reinitialized ([57b0407](https://github.com/StructureBuilder/loong-core/commit/57b0407a0ac2c58c88ca99a137b78641dbe1be89))
+
 ## [1.1.0-alpha.4](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.3...v1.1.0-alpha.4) (2022-04-26)
 
 
