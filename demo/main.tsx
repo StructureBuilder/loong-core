@@ -1,4 +1,4 @@
-import { bind, Component, Injectable, Prop, Watch } from '@/index';
+import { bind, Component, Injectable, Prop, Watch, Autowired } from '@/index';
 import ReactDOM from 'react-dom';
 
 // abstract class Logger {
@@ -65,11 +65,20 @@ import ReactDOM from 'react-dom';
 
 // export const binder = bind(TestComponent);
 
+abstract class Service2 {
+  abstract service: Service;
+
+  abstract decrease(): void;
+}
+
 @Injectable()
 class Service {
   count = 0;
 
   count2 = 0;
+
+  @Autowired()
+  service2!: Service2;
 
   @Watch('count')
   change() {
@@ -77,6 +86,7 @@ class Service {
   }
 
   async increase() {
+    console.log('this.service2', this.service2);
     this.count++;
     this.count2 += 2;
     console.log('commit');
@@ -100,14 +110,30 @@ class Service {
   }
 }
 
+@Injectable()
+class Service2Impl implements Service2 {
+  @Autowired()
+  service!: Service;
+
+  decrease() {
+    console.log('this.service', this.service);
+  }
+}
+
 @Component({
-  providers: [Service],
+  providers: [
+    Service,
+    {
+      provide: Service2,
+      useClass: Service2Impl,
+    },
+  ],
 })
 class AppCompnent {
   @Prop()
   name!: string;
 
-  constructor(public service: Service) {
+  constructor(public service: Service, public service2: Service2) {
     console.log(this);
   }
 }
@@ -125,7 +151,7 @@ const App = binder<{ name: string }>(({ $this }) => {
       </p>
       <Child name="test">test</Child>
       <button onClick={() => $this.service.increase()}>Increase</button>
-      <button onClick={() => $this.service.decrease()}>Decrease</button>
+      <button onClick={() => $this.service2.decrease()}>Decrease</button>
     </div>
   );
 });

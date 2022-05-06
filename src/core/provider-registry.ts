@@ -1,4 +1,9 @@
-import { ComponentRegistryOptions, IProviderConstructor, Provider } from './annotations/component';
+import {
+  ComponentRegistryOptions,
+  IProviderConstructor,
+  Provider,
+  IClassProvider,
+} from './annotations/component';
 import { injectableTargetMap } from './annotations/injectable';
 import { error } from './utils/error';
 
@@ -11,6 +16,15 @@ enum ProviderStatus {
 interface IProvider {
   status: ProviderStatus;
   instance?: any;
+}
+
+function hasUseClass(provider: Provider): provider is IClassProvider {
+  return (
+    typeof provider === 'object' &&
+    provider.provide &&
+    provider.useClass &&
+    provider.provide !== provider.useClass
+  );
 }
 
 export class ProviderRegistry {
@@ -51,12 +65,7 @@ export class ProviderRegistry {
     let Provider: IProviderConstructor | null = null;
 
     // Add a path only if the provider is different from the actual provider.
-    if (
-      typeof provider === 'object' &&
-      provider.provide &&
-      provider.useClass &&
-      provider.provide !== provider.useClass
-    ) {
+    if (hasUseClass(provider)) {
       Provider = provider.useClass;
       this.providerToClassProvider.set(provider.provide, provider.useClass);
     } else if (typeof provider === 'function') {
@@ -91,7 +100,14 @@ export class ProviderRegistry {
 
     // Register dependent providers first.
     this.registerProviders(
-      paramtypes.map((paramtype) => this.getProviderType(paramtype)),
+      paramtypes
+        .map((paramtype) => this.getProviderType(paramtype))
+        .filter(
+          (provider) =>
+            !!this.providers.find((item) =>
+              hasUseClass(item) ? item.provide === provider : item === provider
+            )
+        ),
       Provider
     );
 
