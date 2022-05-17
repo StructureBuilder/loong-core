@@ -1,4 +1,4 @@
-import { bind, Component, Injectable, Prop, Watch, Autowired } from '@/index';
+import { bind, Component, Injectable, Prop, Watch, Autowired, Hook } from '@/index';
 import ReactDOM from 'react-dom';
 
 // abstract class Logger {
@@ -136,11 +136,35 @@ class AppCompnent {
   constructor(public service: Service, public service2: Service2) {
     console.log(this);
   }
+
+  @Hook()
+  setup() {
+    console.log('run');
+  }
+}
+
+@Component({
+  providers: [],
+})
+class ChildCompnent {
+  @Prop()
+  name!: string;
+
+  constructor(public service: Service, public service2: Service2) {
+    console.log(this);
+  }
+
+  @Hook()
+  setup() {
+    console.log('run');
+  }
 }
 
 const binder = bind(AppCompnent);
 
-const Child = binder<{ name: string }>(({ $this }) => <div>Child {$this.service.count}</div>);
+const binder2 = bind(ChildCompnent);
+
+const Child = binder2<{ name: string }>(({ $this }) => <div>Child {$this.service.count}</div>);
 
 const App = binder<{ name: string }>(({ $this }) => {
   console.log('render');

@@ -53,6 +53,12 @@ export class ProviderRegistry {
     this.registerProviders(this.providers);
     this.registerProvider(component);
     this.providerMap.forEach((provider) => this.providerInstances.push(provider?.instance));
+    this.dependencies.forEach((provider) => {
+      const match = this.providerInstances.find((item) => item === provider.constructor);
+      if (!match) {
+        this.providerInstances.push(provider);
+      }
+    });
   }
 
   private initializeMap() {
