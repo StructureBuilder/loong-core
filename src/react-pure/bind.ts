@@ -120,7 +120,7 @@ export function createBind(options?: ICreateBindOptions) {
             }),
           []
         );
-        const dependencies = useMemo(() => component.getProviders(), []);
+        const dependencies = useMemo(() => component.getDependencies(), []);
         const $this = useMemo(() => component.getComponent(), []);
 
         component.props.setProps(props);

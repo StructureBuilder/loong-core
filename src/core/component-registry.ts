@@ -31,6 +31,10 @@ export class ComponentRegistry {
     return this.providerRegistry.getProviders();
   }
 
+  getDependencies() {
+    return this.providerRegistry.getDependencies();
+  }
+
   getProvider(provider: IProviderConstructor) {
     return this.providerRegistry.getProvider(provider);
   }

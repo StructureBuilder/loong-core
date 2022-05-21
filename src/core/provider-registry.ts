@@ -40,11 +40,11 @@ export class ProviderRegistry {
 
   private providerInstances: any[] = [];
 
-  get providers() {
+  private get providers() {
     return this.options.providers || [];
   }
 
-  get dependencies() {
+  private get dependencies() {
     return this.options.dependencies || [];
   }
 
@@ -53,12 +53,6 @@ export class ProviderRegistry {
     this.registerProviders(this.providers);
     this.registerProvider(component);
     this.providerMap.forEach((provider) => this.providerInstances.push(provider?.instance));
-    this.dependencies.forEach((provider) => {
-      const match = this.providerInstances.find((item) => item === provider.constructor);
-      if (!match) {
-        this.providerInstances.push(provider);
-      }
-    });
   }
 
   private initializeMap() {
@@ -148,5 +142,16 @@ export class ProviderRegistry {
 
   getProviders() {
     return this.providerInstances;
+  }
+
+  getDependencies() {
+    const providerInstances = [...this.providerInstances];
+    this.dependencies.forEach((provider) => {
+      const match = providerInstances.find((item) => item === provider.constructor);
+      if (!match) {
+        providerInstances.push(provider);
+      }
+    });
+    return providerInstances;
   }
 }
