@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0-alpha.7](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.6...v1.1.0-alpha.7) (2022-05-21)
+
+
+### Bug Fixes
+
+* **core:** fix getProviders result has dependencies ([b104d02](https://github.com/StructureBuilder/loong-core/commit/b104d027bbb3c9343d494a08ef550b681df6da38))
+
 ## [1.1.0-alpha.6](https://github.com/StructureBuilder/loong-core/compare/v1.1.0-alpha.5...v1.1.0-alpha.6) (2022-05-17)
 
 
